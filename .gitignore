@@ -4,3 +4,5 @@
 faiss_index
 =======
 >>>>>>> 81cc732468d462bc89762e092536c2f213c114a5
+__pycache__
+index.pkl
