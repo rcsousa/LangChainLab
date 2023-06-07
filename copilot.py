@@ -25,8 +25,6 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
-    st.header("Assistente de Pesquisas :books:")
-
     col1, col2 = st.columns([2, 4])
 
     col1.subheader("")
@@ -64,6 +62,7 @@ def main():
 
     with container_pergunta:
         user_input = get_text()
+
 
     with container_resposta:
         if user_input:

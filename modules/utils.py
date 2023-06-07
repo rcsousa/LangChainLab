@@ -170,11 +170,11 @@ def get_text():
     Returns:
         str: O texto de entrada do usuário.
     """
-    form = st.form(key='meu_form', clear_on_submit=True)
-    input_text = form.text_input("", placeholder="Sobre o que você quer falar?", key="input")
-    enviar = form.form_submit_button('Enviar')
-    if enviar:
-        return input_text
+    with st.form(key="user_input_form", clear_on_submit=True):
+        st.markdown("<h1 style='text-align: left; color: #000000;'>Assistente de Pesquisas 📚</h1>", unsafe_allow_html=True)
+        user_input = st.text_input(label="Caixa de texto", label_visibility="hidden" , placeholder="Sobre o que você quer falar?", key="user_input")
+        submit_button = st.form_submit_button(label="Enviar")
+        return user_input
 
 def inicializa_ui():
     """
@@ -198,6 +198,8 @@ def inicializa_ui():
         st.session_state['custo_total'] = 0.0
     if 'modelo' not in st.session_state:
         st.session_state['modelo'] = []
+    if 'user_input' not in st.session_state:
+        st.session_state['user_input'] = ""
 
 def reseta_ui():
     """
@@ -213,3 +215,4 @@ def reseta_ui():
     st.session_state['total_de_tokens'] = []
     st.session_state['custo_total'] = 0.0
     st.session_state['modelo'] = []
+    st.session_state['user_input'] = []
