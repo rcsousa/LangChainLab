@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
 from htmlTemplate import css
-from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui
+from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui, carrega_urls
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
                 if pdf_docs:
                     texto = processa_documentos(pdf_docs)
                     trechos = separa_texto(texto)
-                    store = carrega_vector_db(trechos)
+                    store = carrega_vector_db(trechos, "faiss_uploaded_docs")
                     st.session_state.conversation = conversa(store)
                     st.success("Processamento concluído!")
                 else:
@@ -52,8 +52,18 @@ def main():
         limpar_conversa = st.sidebar.button("Limpar Conversa", key="limpar")
         if limpar_conversa:
             reseta_ui()
-
-
+        
+        url_list = []
+        for i in range(1,22):
+            if i < 10:
+                url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch0" + str(i) + ".html")
+            else:
+                url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch" + str(i) + ".html")
+        
+        print(url_list)
+        docs = carrega_urls(url_list)
+        print(docs)
+        vector_urls = carrega_vector_db(docs, "livro_google")
 
     col2.subheader("")
     container_pergunta = st.container()

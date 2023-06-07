@@ -6,10 +6,12 @@ from langchain.llms import AzureOpenAI
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.document_loaders import UnstructuredURLLoader
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplate import bot_template, user_template
+
 
 
 def carrega_credenciais():
@@ -91,10 +93,10 @@ def separa_texto(texto):
         chunk_size=1000,
         chunk_overlap=200,
         separator="\n")
-    trechos = separador_de_texto.split_text(texto)
+    trechos = separador_de_texto.split_documents(texto)
     return trechos
 
-def carrega_vector_db(trechos):
+def carrega_vector_db(trechos, index_name):
     """
     Carrega os embeddings para os trechos de texto fornecidos e cria um armazenamento de vetor FAISS.
 
@@ -105,9 +107,10 @@ def carrega_vector_db(trechos):
             FAISS: Um armazenamento de vetor FAISS contendo os embeddings para os trechos de texto fornecidos.
     """
     embeddings = define_embedder()
-    metadata = [{"source": str(i)} for i in range(len(trechos))]
-    vector_store = FAISS.from_texts(trechos, embeddings, metadatas=metadata)
-    vector_store.save_local("faiss_index")
+    #metadata = [{"source": str(i)} for i in range(len(trechos))]
+    #vector_store = FAISS.from_documents(trechos, embeddings, metadatas=metadata)
+    vector_store = FAISS.from_documents(trechos, embeddings)
+    vector_store.save_local(index_name)
     return vector_store
 
 def pega_resposta(query, docs):
@@ -171,7 +174,7 @@ def get_text():
         str: O texto de entrada do usuário.
     """
     with st.form(key="user_input_form", clear_on_submit=True):
-        st.markdown("<h1 style='text-align: left; color: #000000;'>Assistente de Pesquisas 📚</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #000000;'>Assistente de Pesquisas 📚</h1>", unsafe_allow_html=True)
         user_input = st.text_input(label="Caixa de texto", label_visibility="hidden" , placeholder="Sobre o que você quer falar?", key="user_input")
         submit_button = st.form_submit_button(label="Enviar")
         return user_input
@@ -216,3 +219,22 @@ def reseta_ui():
     st.session_state['custo_total'] = 0.0
     st.session_state['modelo'] = []
     st.session_state['user_input'] = []
+
+def carrega_urls(url_list):
+    """
+    Carrega as URLs da lista fornecida usando o UnstructuredHtmlLoader do LangChain e divide cada documento usando o CharacterTextSplitter do LangChain.
+
+    Args:
+    url_list (list): Uma lista de URLs para carregar e dividir.
+
+    Returns:
+    list: Uma lista de documentos, onde cada documento é uma lista de trechos de texto.
+    """
+    loader = UnstructuredURLLoader(urls=url_list)
+    splitter = CharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=200,
+        separator="\n")
+    doc = loader.load()
+    data = splitter.split_documents(doc)
+    return data
