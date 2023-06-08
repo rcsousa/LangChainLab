@@ -1,11 +1,11 @@
 
 """Imports the required modules for the Streamlit web app."""
-
+import os
 import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
 from htmlTemplate import css
-from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui, carrega_urls
+from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui, carrega_base_de_conhecimento_sre
 
 
 def main():
@@ -29,21 +29,46 @@ def main():
 
     col1.subheader("")
     with st.sidebar:
-        st.subheader("📖 Documentos")
-        pdf_docs = st.file_uploader(label="Carregue seus documentos", accept_multiple_files=True, type=["pdf"])
+        #Seção para carregar documentos adicionais para análise
+        st.subheader("📖 Documentos Adicionais")
+        pdf_docs = st.file_uploader(label="Carregue documentos adicionais", accept_multiple_files=True, type=["pdf"], label_visibility="visible")
         if st.button("Processar"):
             with st.spinner("Processando..."):
-                if pdf_docs:
-                    texto = processa_documentos(pdf_docs)
+                upload_dir = os.path.join("uploads")
+                for uploaded_files in pdf_docs:
+                    with open(os.path.join(upload_dir, uploaded_files.name), "wb") as f:
+                        saved_file = f.write(uploaded_files.getbuffer())
+                if saved_file:
+                    texto = processa_documentos(upload_dir)
                     trechos = separa_texto(texto)
                     store = carrega_vector_db(trechos, "faiss_uploaded_docs")
                     st.session_state.conversation = conversa(store)
                     st.success("Processamento concluído!")
                 else:
                     st.error("Nenhum documento processado!")
-        modelo = st.sidebar.radio("Escolha o modelo:", ("GPT-3", "GPT-3.5"))
+        # Fim da seção para carregar documentos adicionais para análise
         
-        # Mapear modelo
+        # Seção para carregar bases de conhecimento conhecidas
+        st.subheader("🪣 Base de Dados Fundamentais")
+        
+        def caixa_de_selecao(opcao_selecionada):
+            # Do something with the selected option
+            st.write(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
+
+        opcoes = ["Site Reliability Engineering", "Option 2", "Option 3"]
+        opcao_selecionada = st.selectbox("Selecione uma opção", opcoes)
+        if st.button("Carregar"):
+            with st.spinner("Processando..."):
+                t = carrega_base_de_conhecimento_sre()
+                if t:
+                    caixa_de_selecao(opcao_selecionada)
+        # Fim da seção para carregar bases de conhecimento conhecidas
+        
+        #Seção para selecionar o modelo de conversação
+        
+        st.subheader("🤖 Escolha seu modelo LLM")
+        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
+        
         if modelo == "GPT-3":
             st.session_state.modelo = "text-davinci-003"
         else:
@@ -52,18 +77,7 @@ def main():
         limpar_conversa = st.sidebar.button("Limpar Conversa", key="limpar")
         if limpar_conversa:
             reseta_ui()
-        
-        url_list = []
-        for i in range(1,22):
-            if i < 10:
-                url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch0" + str(i) + ".html")
-            else:
-                url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch" + str(i) + ".html")
-        
-        print(url_list)
-        docs = carrega_urls(url_list)
-        print(docs)
-        vector_urls = carrega_vector_db(docs, "livro_google")
+        # Fim da seção para selecionar o modelo de conversação
 
     col2.subheader("")
     container_pergunta = st.container()

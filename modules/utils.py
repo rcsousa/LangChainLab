@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
+from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.llms import AzureOpenAI
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
@@ -72,11 +73,14 @@ def processa_documentos(pdfs):
     Returns:
         str: Uma string contendo o texto concatenado de todos os arquivos PDF.
     """
-    texto = ""
-    for pdf in pdfs:
-        pdf_reader = PdfReader(pdf)
-        for pages in pdf_reader.pages:
-            texto += pages.extract_text()
+    #texto = ""
+    #for pdf in pdfs:
+    #    pdf_reader = PdfReader(pdf)
+    #    for pages in pdf_reader.pages:
+    #        texto += pages.extract_text()
+    #return texto
+    loader = PyPDFDirectoryLoader(pdfs)
+    texto = loader.load()
     return texto
 
 def separa_texto(texto):
@@ -203,6 +207,7 @@ def inicializa_ui():
         st.session_state['modelo'] = []
     if 'user_input' not in st.session_state:
         st.session_state['user_input'] = ""
+    limpa_uploads()
 
 def reseta_ui():
     """
@@ -218,7 +223,8 @@ def reseta_ui():
     st.session_state['total_de_tokens'] = []
     st.session_state['custo_total'] = 0.0
     st.session_state['modelo'] = []
-    st.session_state['user_input'] = []
+    st.session_state['user_input'] = ""
+    limpa_uploads()
 
 def carrega_urls(url_list):
     """
@@ -238,3 +244,40 @@ def carrega_urls(url_list):
     doc = loader.load()
     data = splitter.split_documents(doc)
     return data
+
+def carrega_base_de_conhecimento_sre():
+    """
+    Carrega as URLs do livro Building Secure and Reliable Systems do Google e as processa em um banco de vetores.
+
+    Retorna:
+    Nenhum
+    """
+    url_list = []
+    for i in range(1,22):
+        if i < 10:
+            url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch0" + str(i) + ".html")
+        else:
+            url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch" + str(i) + ".html")
+
+        print(url_list)
+        docs = carrega_urls(url_list)
+        print(docs)
+        vector_urls = carrega_vector_db(docs, "livro_google")
+
+def limpa_uploads():
+    """
+    Exclui todos os arquivos no diretório de uploads.
+
+    Args:
+    Nenhum
+
+    Returns:
+    Nenhum
+    """
+    for filename in os.listdir("uploads"):
+        file_path = os.path.join("uploads", filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f"Falha ao excluir {file_path}. Motivo: {e}")
