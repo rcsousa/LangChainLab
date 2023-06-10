@@ -1,11 +1,23 @@
 
 """Imports the required modules for the Streamlit web app."""
-
+import os
 import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
 from htmlTemplate import css
-from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui
+from modules.utils import carregar_credenciais
+from modules.utils import processar_documentos
+from modules.utils import separar_texto
+from modules.utils import carregar_vector_db
+from modules.utils import criar_chain_instance
+from modules.utils import gerar_resposta
+from modules.utils import capturar_input_usuario
+from modules.utils import inicializar_ui
+from modules.utils import resetar_ui
+from modules.utils import limpar_uploads
+from modules.utils import agente
+from modules.utils import sre_site_reliability_engineering
+from modules.utils import sre_building_secure_and_reliable_systems
 
 
 def main():
@@ -15,10 +27,10 @@ def main():
     Retorna:
         None
     """
-    carrega_credenciais()
-    inicializa_ui()
+    carregar_credenciais()
+    inicializar_ui()
 
-    st.set_page_config(page_title="Assistant de Pesquisas",page_icon=":books:")
+    st.set_page_config(page_title="Assistente de Pesquisas",page_icon=":books:")
     st.write(css,unsafe_allow_html=True)
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
@@ -29,21 +41,46 @@ def main():
 
     col1.subheader("")
     with st.sidebar:
-        st.subheader("📖 Documentos")
-        pdf_docs = st.file_uploader(label="Carregue seus documentos", accept_multiple_files=True, type=["pdf"])
+        #Seção para carregar documentos adicionais para análise
+        st.subheader("📖 Documentos Adicionais")
+        pdf_docs = st.file_uploader(label="Carregue documentos adicionais", accept_multiple_files=True, type=["pdf"], label_visibility="visible")
         if st.button("Processar"):
             with st.spinner("Processando..."):
-                if pdf_docs:
-                    texto = processa_documentos(pdf_docs)
-                    trechos = separa_texto(texto)
-                    store = carrega_vector_db(trechos)
-                    st.session_state.conversation = conversa(store)
+                upload_dir = os.path.join("uploads")
+                for uploaded_files in pdf_docs:
+                    with open(os.path.join(upload_dir, uploaded_files.name), "wb") as f:
+                        saved_file = f.write(uploaded_files.getbuffer())
+                if saved_file:
+                    documentos = processar_documentos(upload_dir)
+                    trechos = separar_texto(documentos)
+                    store = carregar_vector_db(trechos, "faiss_uploaded_docs")
+                    st.session_state.conversation = criar_chain_instance(store)
                     st.success("Processamento concluído!")
                 else:
                     st.error("Nenhum documento processado!")
-        modelo = st.sidebar.radio("Escolha o modelo:", ("GPT-3", "GPT-3.5"))
+        # Fim da seção para carregar documentos adicionais para análise
         
-        # Mapear modelo
+        # Seção para carregar bases de conhecimento conhecidas
+        st.subheader("🪣 Base de Dados Fundamentais")
+        
+        opcoes = ["Site Reliability Engineering", "Building Secure and Reliable Systems", "Observability [TBD]"]
+        opcao_selecionada = st.selectbox("Selecione uma opção", opcoes)
+        
+        if st.button("Carregar"):
+            with st.spinner("Processando..."):
+                if opcao_selecionada == "Site Reliability Engineering":
+                    t = sre_site_reliability_engineering()
+                elif opcao_selecionada == "Building Secure and Reliable Systems":
+                    t = sre_building_secure_and_reliable_systems()
+                if t:
+                    st.success(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
+        # Fim da seção para carregar bases de conhecimento conhecidas
+        
+        #Seção para selecionar o modelo de conversação
+        
+        st.subheader("🤖 Escolha seu modelo LLM")
+        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
+        
         if modelo == "GPT-3":
             st.session_state.modelo = "text-davinci-003"
         else:
@@ -51,9 +88,9 @@ def main():
         
         limpar_conversa = st.sidebar.button("Limpar Conversa", key="limpar")
         if limpar_conversa:
-            reseta_ui()
-
-
+            resetar_ui()
+            limpar_uploads()
+        # Fim da seção para selecionar o modelo de conversação
 
     col2.subheader("")
     container_pergunta = st.container()
@@ -61,19 +98,23 @@ def main():
     container_resposta = st.container()
 
     with container_pergunta:
-        user_input = get_text()
+        input_usuario = capturar_input_usuario()
 
 
     with container_resposta:
-        if user_input:
-            response = gera_conversa(user_input)
-            st.session_state.past.append(user_input)
-            st.session_state.generated.append(response['answer'])
+        if input_usuario:
+            response = agente(input_usuario)
+            #response = gerar_resposta(input_usuario)
+            sre_kb_resposta = agente(input_usuario)
+            if sre_kb_resposta:
+                print(sre_kb_resposta['output'])
+            st.session_state.past.append(input_usuario)
+            st.session_state.generated.append(response['output'])
         
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])):
                 message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                message(st.session_state["generated"][i], key=str(i))
+                message(st.session_state["generated"][i], avatar_style="bottts", seed="Snickers", key=str(i))
 
 
 
