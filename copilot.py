@@ -99,19 +99,18 @@ def main():
 
     with container_resposta:
         if input_usuario:
-            response = gerar_resposta(input_usuario)
-            #response = agente(input_usuario)
-            query = "What is SRE and why it is important to build secure and reliable systems?"
-            sre_kb_resposta = agente(query)
+            response = agente(input_usuario)
+            #response = gerar_resposta(input_usuario)
+            sre_kb_resposta = agente(input_usuario)
             if sre_kb_resposta:
-                print(sre_kb_resposta)
+                print(sre_kb_resposta['output'])
             st.session_state.past.append(input_usuario)
-            st.session_state.generated.append(response['answer'])
+            st.session_state.generated.append(response['output'])
         
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])):
                 message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                message(st.session_state["generated"][i], key=str(i))
+                message(st.session_state["generated"][i], avatar_style="bottts", seed="Snickers", key=str(i))
 
 
 

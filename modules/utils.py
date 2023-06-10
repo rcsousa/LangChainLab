@@ -3,7 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.document_loaders import PyPDFDirectoryLoader
-from langchain.llms import AzureOpenAI
+from langchain.chat_models import AzureChatOpenAI as AzureOpenAI
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -13,6 +13,7 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.agents import Tool, initialize_agent
+from langchain.prompts import PromptTemplate
 
 
 
@@ -148,7 +149,8 @@ def criar_chain_instance(vectorstore):
     Returns:
         ConversationalRetrievalChain: Uma cadeia de recuperação conversacional.
     """
-    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any, temperature=0.0)
+    #llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any, temperature=0.0)
+    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -302,7 +304,7 @@ def criar_vectorstore_session(index_name):
     if index_name not in st.session_state:
         st.session_state[index_name] = index_name
 
-def pesquisar_kb_sre(input_usuario):
+
     """
     Pesquisa a base de conhecimento do livro Building Secure and Reliable Systems do Google para encontrar as 3 respostas mais similares à entrada do usuário.
 
@@ -312,43 +314,72 @@ def pesquisar_kb_sre(input_usuario):
     Returns:
     list: Uma lista contendo as 3 respostas mais similares à entrada do usuário.
     """
+
 def pesquisar_kb_sre(input_usuario):
     embeddings = definir_embedder()
     kb_sre = FAISS.load_local("livro_google", embeddings)
-    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any)
+    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
     #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    
     qa = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=kb_sre.as_retriever(),
         #memory=memory
     )
 
-    #resposta = kb_sre.similarity_search(input_usuario, k=3)
+    resposta = qa.run(input_usuario)
+    return resposta
+
+def pesquisar_documentos_upload(input_usuario):
+    embeddings = definir_embedder()
+    uploaded_docs = FAISS.load_local("faiss_uploaded_docs", embeddings)
+    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0, client=any)
+    #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=uploaded_docs.as_retriever()
+        #memory=memory
+    )
+
     resposta = qa.run(input_usuario)
     return resposta
 
 def agente(input_usuario):
 
-    embeddings = definir_embedder()
-    kb_sre = FAISS.load_local("livro_google", embeddings)
-    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any)
-    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-    
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=kb_sre.as_retriever(),
-        memory=memory
-    )
-
     tools = [
         Tool(
+            name="Documentos enviados",
+            func=pesquisar_documentos_upload,
+            description=(
+                'use this tool when answering general knowledge queries about files submitted by the user.'
+            )
+        ),  
+        Tool(
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
-            func=qa.run,
+            func=pesquisar_kb_sre,
             description=(
                 'Use this tool when answering questions about SRE (Site Reliability Engineeing) and about best practices for building secure and reliable systems.'
             )
-        )
+        )   
     ]
+
+    #prompt_template = f"""You are a helpful and analytical assistant. You are helping a user with information about {input}  related to the documents that were uploaded. 
+    #by the user. and if you don't know the answer, you can ask the user for more information. You can also ask the user to upload more documents.
+    #
+    #According to the documents uploaded, your answer is:"""
+
+    
+    #prompt = PromptTemplate(template=prompt_template, input_variables=["input"])
+    llm = AzureOpenAI(
+        deployment_name='trouble-buddy', 
+        model_name='gpt-3.5-turbo', 
+        temperature=0.0, 
+        client=any, 
+        #prompt=prompt
+        )
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    
 
     agente = initialize_agent(
         agent='chat-conversational-react-description',
