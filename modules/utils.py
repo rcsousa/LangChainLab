@@ -9,8 +9,10 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.document_loaders import UnstructuredURLLoader
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
+from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+from langchain.agents import Tool, initialize_agent
 
 
 
@@ -114,6 +116,7 @@ def carrega_vector_db(trechos, index_name):
     #vector_store = FAISS.from_documents(trechos, embeddings, metadatas=metadata)
     vector_store = FAISS.from_documents(trechos, embeddings)
     vector_store.save_local(index_name)
+    criar_vectorstore_session(index_name)
     return vector_store
 
 def pega_resposta(query, docs):
@@ -145,7 +148,7 @@ def criar_chain_instance(vectorstore):
     Returns:
         ConversationalRetrievalChain: Uma cadeia de recuperação conversacional.
     """
-    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any)
+    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any, temperature=0.0)
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -206,6 +209,8 @@ def inicializar_ui():
         st.session_state['modelo'] = []
     if 'user_input' not in st.session_state:
         st.session_state['user_input'] = ""
+    if 'vectorstore' not in st.session_state:
+        st.session_state['vectorstore'] = ""
     limpar_uploads()
 
 def resetar_ui():
@@ -223,6 +228,8 @@ def resetar_ui():
     st.session_state['custo_total'] = 0.0
     st.session_state['modelo'] = []
     st.session_state['user_input'] = ""
+    st.session_state['vectorstore'] = ""
+
     limpar_uploads()
 
 def carregar_urls(url_list):
@@ -281,3 +288,76 @@ def limpar_uploads():
                 os.unlink(file_path)
         except Exception as e:
             print(f"Falha ao excluir {file_path}. Motivo: {e}")
+
+def criar_vectorstore_session(index_name):
+    """
+    Cria uma sessão VectorStore para um determinado índice.
+
+    Args:
+    index_name (str): O nome do índice para criar uma sessão VectorStore.
+
+    Returns:
+    VectorStoreSession: Uma sessão VectorStore para o índice fornecido.
+    """
+    if index_name not in st.session_state:
+        st.session_state[index_name] = index_name
+
+def pesquisar_kb_sre(input_usuario):
+    """
+    Pesquisa a base de conhecimento do livro Building Secure and Reliable Systems do Google para encontrar as 3 respostas mais similares à entrada do usuário.
+
+    Args:
+    input_usuario (str): A entrada do usuário a ser pesquisada na base de conhecimento.
+
+    Returns:
+    list: Uma lista contendo as 3 respostas mais similares à entrada do usuário.
+    """
+def pesquisar_kb_sre(input_usuario):
+    embeddings = definir_embedder()
+    kb_sre = FAISS.load_local("livro_google", embeddings)
+    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any)
+    #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=kb_sre.as_retriever(),
+        #memory=memory
+    )
+
+    #resposta = kb_sre.similarity_search(input_usuario, k=3)
+    resposta = qa.run(input_usuario)
+    return resposta
+
+def agente(input_usuario):
+
+    embeddings = definir_embedder()
+    kb_sre = FAISS.load_local("livro_google", embeddings)
+    llm = AzureOpenAI(model_kwargs={'engine':st.session_state.modelo}, client=any)
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=kb_sre.as_retriever(),
+        memory=memory
+    )
+
+    tools = [
+        Tool(
+            name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
+            func=qa.run,
+            description=(
+                'Use this tool when answering questions about SRE (Site Reliability Engineeing) and about best practices for building secure and reliable systems.'
+            )
+        )
+    ]
+
+    agente = initialize_agent(
+        agent='chat-conversational-react-description',
+        tools=tools,
+        llm=llm,
+        verbose=True,
+        max_interactions=3,
+        early_stopping_method='generate',
+        memory=memory
+    )
+
+    return agente(input_usuario)

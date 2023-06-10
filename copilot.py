@@ -5,7 +5,19 @@ import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
 from htmlTemplate import css
-from modules.utils import carregar_credenciais, processar_documentos, separar_texto, carrega_vector_db, criar_chain_instance, gerar_resposta, capturar_input_usuario, inicializar_ui, resetar_ui, carregar_base_de_conhecimento_sre, limpar_uploads
+from modules.utils import carregar_credenciais
+from modules.utils import processar_documentos
+from modules.utils import separar_texto
+from modules.utils import carrega_vector_db
+from modules.utils import criar_chain_instance
+from modules.utils import gerar_resposta
+from modules.utils import capturar_input_usuario
+from modules.utils import inicializar_ui
+from modules.utils import resetar_ui
+from modules.utils import carregar_base_de_conhecimento_sre
+from modules.utils import limpar_uploads
+from modules.utils import pesquisar_kb_sre
+from modules.utils import agente
 
 
 def main():
@@ -88,6 +100,11 @@ def main():
     with container_resposta:
         if input_usuario:
             response = gerar_resposta(input_usuario)
+            #response = agente(input_usuario)
+            query = "What is SRE and why it is important to build secure and reliable systems?"
+            sre_kb_resposta = agente(query)
+            if sre_kb_resposta:
+                print(sre_kb_resposta)
             st.session_state.past.append(input_usuario)
             st.session_state.generated.append(response['answer'])
         
