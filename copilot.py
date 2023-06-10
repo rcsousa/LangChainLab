@@ -8,16 +8,16 @@ from htmlTemplate import css
 from modules.utils import carregar_credenciais
 from modules.utils import processar_documentos
 from modules.utils import separar_texto
-from modules.utils import carrega_vector_db
+from modules.utils import carregar_vector_db
 from modules.utils import criar_chain_instance
 from modules.utils import gerar_resposta
 from modules.utils import capturar_input_usuario
 from modules.utils import inicializar_ui
 from modules.utils import resetar_ui
-from modules.utils import carregar_base_de_conhecimento_sre
 from modules.utils import limpar_uploads
-from modules.utils import pesquisar_kb_sre
 from modules.utils import agente
+from modules.utils import sre_site_reliability_engineering
+from modules.utils import sre_building_secure_and_reliable_systems
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
                 if saved_file:
                     documentos = processar_documentos(upload_dir)
                     trechos = separar_texto(documentos)
-                    store = carrega_vector_db(trechos, "faiss_uploaded_docs")
+                    store = carregar_vector_db(trechos, "faiss_uploaded_docs")
                     st.session_state.conversation = criar_chain_instance(store)
                     st.success("Processamento concluído!")
                 else:
@@ -63,11 +63,15 @@ def main():
         # Seção para carregar bases de conhecimento conhecidas
         st.subheader("🪣 Base de Dados Fundamentais")
         
-        opcoes = ["Site Reliability Engineering", "Observability [TBD]", "DevOps [TBD]"]
+        opcoes = ["Site Reliability Engineering", "Building Secure and Reliable Systems", "Observability [TBD]"]
         opcao_selecionada = st.selectbox("Selecione uma opção", opcoes)
+        
         if st.button("Carregar"):
             with st.spinner("Processando..."):
-                t = carregar_base_de_conhecimento_sre()
+                if opcao_selecionada == "Site Reliability Engineering":
+                    t = sre_site_reliability_engineering()
+                elif opcao_selecionada == "Building Secure and Reliable Systems":
+                    t = sre_building_secure_and_reliable_systems()
                 if t:
                     st.success(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
         # Fim da seção para carregar bases de conhecimento conhecidas

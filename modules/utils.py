@@ -1,7 +1,6 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from PyPDF2 import PdfReader
 from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.chat_models import AzureChatOpenAI as AzureOpenAI
 from langchain.vectorstores import FAISS
@@ -13,7 +12,6 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.agents import Tool, initialize_agent
-from langchain.prompts import PromptTemplate
 
 
 
@@ -102,7 +100,7 @@ def separar_texto(documentos):
     trechos = separador_de_texto.split_documents(documentos)
     return trechos
 
-def carrega_vector_db(trechos, index_name):
+def carregar_vector_db(trechos, index_name):
     """
     Carrega os embeddings para os trechos de texto fornecidos e cria um armazenamento de vetor FAISS.
 
@@ -253,7 +251,7 @@ def carregar_urls(url_list):
     data = splitter.split_documents(doc)
     return data
 
-def carregar_base_de_conhecimento_sre():
+def sre_building_secure_and_reliable_systems():
     """
     Carrega as URLs do livro Building Secure and Reliable Systems do Google e as processa em um banco de vetores.
 
@@ -270,8 +268,122 @@ def carregar_base_de_conhecimento_sre():
         print(url_list)
         docs = carregar_urls(url_list)
         print(docs)
-        vector_urls = carrega_vector_db(docs, "livro_google")
+        vector_urls = carregar_vector_db(docs, "building_secure_and_seliable_systems")
         return vector_urls
+
+def sre_site_reliability_engineering():
+    """
+    Carrega as URLs do livro Site Reliability Engineering do Google e as processa em um banco de vetores.
+
+    Retorna
+    url
+    """
+
+    url_list = [
+        "https://sre.google/sre-book/foreword/",
+        "https://sre.google/sre-book/preface/",
+        "https://sre.google/sre-book/part-I-introduction/",
+        "https://sre.google/sre-book/introduction/",
+        "https://sre.google/sre-book/production-environment/",
+        "https://sre.google/sre-book/part-II-principles/",
+        "https://sre.google/sre-book/embracing-risk/",
+        "https://sre.google/sre-book/service-level-objectives/",
+        "https://sre.google/sre-book/eliminating-toil/",
+        "https://sre.google/sre-book/monitoring-distributed-systems/",
+        "https://sre.google/sre-book/automation-at-google/",
+        "https://sre.google/sre-book/release-engineering/",
+        "https://sre.google/sre-book/simplicity/",
+        "https://sre.google/sre-book/part-III-practices/",
+        "https://sre.google/sre-book/practical-alerting/",
+        "https://sre.google/sre-book/being-on-call/",
+        "https://sre.google/sre-book/effective-troubleshooting/",
+        "https://sre.google/sre-book/emergency-response/",
+        "https://sre.google/sre-book/managing-incidents/",
+        "https://sre.google/sre-book/postmortem-culture/",
+        "https://sre.google/sre-book/tracking-outages/",
+        "https://sre.google/sre-book/testing-reliability/",
+        "https://sre.google/sre-book/software-engineering-in-sre/",
+        "https://sre.google/sre-book/load-balancing-frontend/",
+        "https://sre.google/sre-book/load-balancing-datacenter/",
+        "https://sre.google/sre-book/handling-overload/",
+        "https://sre.google/sre-book/addressing-cascading-failures/",
+        "https://sre.google/sre-book/managing-critical-state/",
+        "https://sre.google/sre-book/distributed-periodic-scheduling/",
+        "https://sre.google/sre-book/data-processing-pipelines/",
+        "https://sre.google/sre-book/data-integrity/",
+        "https://sre.google/sre-book/reliable-product-launches/",
+        "https://sre.google/sre-book/part-IV-management/",
+        "https://sre.google/sre-book/accelerating-sre-on-call/",
+        "https://sre.google/sre-book/dealing-with-interrupts/",
+        "https://sre.google/sre-book/operational-overload/",
+        "https://sre.google/sre-book/communication-and-collaboration/",
+        "https://sre.google/sre-book/evolving-sre-engagement-model/",
+        "https://sre.google/sre-book/part-V-conclusions/",
+        "https://sre.google/sre-book/lessons-learned/",
+        "https://sre.google/sre-book/conclusion/",
+        "https://sre.google/sre-book/availability-table/",
+        "https://sre.google/sre-book/service-best-practices/",
+        "https://sre.google/sre-book/incident-document/",
+        "https://sre.google/sre-book/example-postmortem/",
+        "https://sre.google/sre-book/launch-checklist/",
+        "https://sre.google/sre-book/production-meeting/",
+        "https://sre.google/sre-book/bibliography/",
+        "https://sre.google/sre-book/table-of-contents/",
+        "https://sre.google/sre-book/foreword/",
+        "https://sre.google/sre-book/preface/",
+        "https://sre.google/sre-book/part-I-introduction/",
+        "https://sre.google/sre-book/introduction/",
+        "https://sre.google/sre-book/production-environment/",
+        "https://sre.google/sre-book/part-II-principles/",
+        "https://sre.google/sre-book/embracing-risk/",
+        "https://sre.google/sre-book/service-level-objectives/",
+        "https://sre.google/sre-book/eliminating-toil/",
+        "https://sre.google/sre-book/monitoring-distributed-systems/",
+        "https://sre.google/sre-book/automation-at-google/",
+        "https://sre.google/sre-book/release-engineering/",
+        "https://sre.google/sre-book/simplicity/",
+        "https://sre.google/sre-book/part-III-practices/",
+        "https://sre.google/sre-book/practical-alerting/",
+        "https://sre.google/sre-book/being-on-call/",
+        "https://sre.google/sre-book/effective-troubleshooting/",
+        "https://sre.google/sre-book/emergency-response/",
+        "https://sre.google/sre-book/managing-incidents/",
+        "https://sre.google/sre-book/postmortem-culture/",
+        "https://sre.google/sre-book/tracking-outages/",
+        "https://sre.google/sre-book/testing-reliability/",
+        "https://sre.google/sre-book/software-engineering-in-sre/",
+        "https://sre.google/sre-book/load-balancing-frontend/",
+        "https://sre.google/sre-book/load-balancing-datacenter/",
+        "https://sre.google/sre-book/handling-overload/",
+        "https://sre.google/sre-book/addressing-cascading-failures/",
+        "https://sre.google/sre-book/managing-critical-state/",
+        "https://sre.google/sre-book/distributed-periodic-scheduling/",
+        "https://sre.google/sre-book/data-processing-pipelines/",
+        "https://sre.google/sre-book/data-integrity/",
+        "https://sre.google/sre-book/reliable-product-launches/",
+        "https://sre.google/sre-book/part-IV-management/",
+        "https://sre.google/sre-book/accelerating-sre-on-call/",
+        "https://sre.google/sre-book/dealing-with-interrupts/",
+        "https://sre.google/sre-book/operational-overload/",
+        "https://sre.google/sre-book/communication-and-collaboration/",
+        "https://sre.google/sre-book/evolving-sre-engagement-model/",
+        "https://sre.google/sre-book/part-V-conclusions/",
+        "https://sre.google/sre-book/lessons-learned/",
+        "https://sre.google/sre-book/conclusion/",
+        "https://sre.google/sre-book/availability-table/",
+        "https://sre.google/sre-book/service-best-practices/",
+        "https://sre.google/sre-book/incident-document/",
+        "https://sre.google/sre-book/example-postmortem/",
+        "https://sre.google/sre-book/launch-checklist/",
+        "https://sre.google/sre-book/production-meeting/",
+        "https://sre.google/sre-book/bibliography/"
+    ]
+    
+    print(url_list)
+    docs = carregar_urls(url_list)
+    print(docs)
+    vector_urls = carregar_vector_db(docs, "site_reliability_engineering")
+    return vector_urls
 
 def limpar_uploads():
     """
@@ -315,9 +427,9 @@ def criar_vectorstore_session(index_name):
     list: Uma lista contendo as 3 respostas mais similares à entrada do usuário.
     """
 
-def pesquisar_kb_sre(input_usuario):
+def pesquisar_kb_brds(input_usuario):
     embeddings = definir_embedder()
-    kb_sre = FAISS.load_local("livro_google", embeddings)
+    kb_sre = FAISS.load_local("building_secure_and_seliable_systems", embeddings)
     llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
     #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     
@@ -345,6 +457,21 @@ def pesquisar_documentos_upload(input_usuario):
     resposta = qa.run(input_usuario)
     return resposta
 
+def pesquisar_kb_sre(input_usuario):
+    embeddings = definir_embedder()
+    kb_sre = FAISS.load_local("site_reliability_engineering", embeddings)
+    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
+    #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=kb_sre.as_retriever(),
+        #memory=memory
+    )
+
+    resposta = qa.run(input_usuario)
+    return resposta
+
 def agente(input_usuario):
 
     tools = [
@@ -352,16 +479,24 @@ def agente(input_usuario):
             name="Documentos enviados",
             func=pesquisar_documentos_upload,
             description=(
-                'use this tool when answering general knowledge queries about files submitted by the user.'
+                'Useful for answering questions based on the documents that were uploaded by the user'
             )
         ),  
         Tool(
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
+            func=pesquisar_kb_brds,
+            description=(
+                'Use this tool when answering questions about Designing and Building Reliable Distributed Systems'
+            )
+        ),
+        Tool(
+            name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
             func=pesquisar_kb_sre,
             description=(
-                'Use this tool when answering questions about SRE (Site Reliability Engineeing) and about best practices for building secure and reliable systems.'
+                'Use this tool when answering questions about Site Reliability Engineering (SRE)'
             )
-        )   
+        )
+
     ]
 
     #prompt_template = f"""You are a helpful and analytical assistant. You are helping a user with information about {input}  related to the documents that were uploaded. 
@@ -375,7 +510,7 @@ def agente(input_usuario):
         deployment_name='trouble-buddy', 
         model_name='gpt-3.5-turbo', 
         temperature=0.0, 
-        client=any, 
+        client=any
         #prompt=prompt
         )
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
@@ -388,6 +523,7 @@ def agente(input_usuario):
         verbose=True,
         max_interactions=3,
         early_stopping_method='generate',
+        handle_parsing_errors=True,
         memory=memory
     )
 
