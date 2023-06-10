@@ -11,11 +11,10 @@ from langchain.document_loaders import UnstructuredURLLoader
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from htmlTemplate import bot_template, user_template
 
 
 
-def carrega_credenciais():
+def carregar_credenciais():
     """
     Carrega as credenciais da OpenAI das variáveis de ambiente.
 
@@ -44,7 +43,7 @@ def carrega_credenciais():
 
     return dict(openai_api_type=openai_api_type, openai_api_version=openai_api_version, openai_api_base=openai_api_base, openai_api_key=openai_api_key, model_deployment_id=model_deployment_id)
 
-def define_embedder():
+def definir_embedder():
     """
     Define e retorna um objeto OpenAIEmbeddings com os parâmetros especificados.
 
@@ -63,7 +62,7 @@ def define_embedder():
     )
     return embeddings
 
-def processa_documentos(pdfs):
+def processar_documentos(upload_dir):
     """
     Extrai o texto de arquivos PDF e os concatena em uma única string.
 
@@ -79,11 +78,11 @@ def processa_documentos(pdfs):
     #    for pages in pdf_reader.pages:
     #        texto += pages.extract_text()
     #return texto
-    loader = PyPDFDirectoryLoader(pdfs)
+    loader = PyPDFDirectoryLoader(upload_dir)
     texto = loader.load()
     return texto
 
-def separa_texto(texto):
+def separar_texto(documentos):
     """
     Divide um texto em pedaços menores usando um RecursiveCharacterTextSplitter.
     
@@ -97,7 +96,7 @@ def separa_texto(texto):
         chunk_size=1000,
         chunk_overlap=200,
         separator="\n")
-    trechos = separador_de_texto.split_documents(texto)
+    trechos = separador_de_texto.split_documents(documentos)
     return trechos
 
 def carrega_vector_db(trechos, index_name):
@@ -110,7 +109,7 @@ def carrega_vector_db(trechos, index_name):
         Returns:
             FAISS: Um armazenamento de vetor FAISS contendo os embeddings para os trechos de texto fornecidos.
     """
-    embeddings = define_embedder()
+    embeddings = definir_embedder()
     #metadata = [{"source": str(i)} for i in range(len(trechos))]
     #vector_store = FAISS.from_documents(trechos, embeddings, metadatas=metadata)
     vector_store = FAISS.from_documents(trechos, embeddings)
@@ -136,7 +135,7 @@ def pega_resposta(query, docs):
     parte2 = response_parts[1] if len(response_parts) > 1 else ""
     return dict(response=response, parte1=parte1, parte2=parte2)
 
-def conversa(vectorstore):
+def criar_chain_instance(vectorstore):
     """
     Cria uma cadeia de recuperação conversacional usando o armazenamento de vetor fornecido.
 
@@ -156,7 +155,7 @@ def conversa(vectorstore):
     st.session_state['messages'].append({"role": "assistant", "content": conversation_chain})
     return conversation_chain
 
-def gera_conversa(pergunta):
+def gerar_resposta(input_usuario):
     """
     Gera uma resposta de conversa para uma determinada pergunta usando a cadeia de recuperação conversacional Langchain.
 
@@ -166,11 +165,11 @@ def gera_conversa(pergunta):
     Returns:
         None
     """
-    response = st.session_state.conversation({'question': pergunta})
-    st.session_state.chat_history = response['chat_history']
-    return response
+    resposta = st.session_state.conversation({'question': input_usuario})
+    st.session_state.chat_history = resposta['chat_history']
+    return resposta
 
-def get_text():
+def capturar_input_usuario():
     """
     Obtém o texto de entrada do usuário de um widget de entrada de texto do Streamlit.
 
@@ -183,7 +182,7 @@ def get_text():
         submit_button = st.form_submit_button(label="Enviar")
         return user_input
 
-def inicializa_ui():
+def inicializar_ui():
     """
     Inicializa as variáveis de estado do Streamlit.
     """
@@ -207,9 +206,9 @@ def inicializa_ui():
         st.session_state['modelo'] = []
     if 'user_input' not in st.session_state:
         st.session_state['user_input'] = ""
-    limpa_uploads()
+    limpar_uploads()
 
-def reseta_ui():
+def resetar_ui():
     """
     Resets the Streamlit session state variables to their initial values.
     """
@@ -224,9 +223,9 @@ def reseta_ui():
     st.session_state['custo_total'] = 0.0
     st.session_state['modelo'] = []
     st.session_state['user_input'] = ""
-    limpa_uploads()
+    limpar_uploads()
 
-def carrega_urls(url_list):
+def carregar_urls(url_list):
     """
     Carrega as URLs da lista fornecida usando o UnstructuredHtmlLoader do LangChain e divide cada documento usando o CharacterTextSplitter do LangChain.
 
@@ -245,7 +244,7 @@ def carrega_urls(url_list):
     data = splitter.split_documents(doc)
     return data
 
-def carrega_base_de_conhecimento_sre():
+def carregar_base_de_conhecimento_sre():
     """
     Carrega as URLs do livro Building Secure and Reliable Systems do Google e as processa em um banco de vetores.
 
@@ -260,11 +259,12 @@ def carrega_base_de_conhecimento_sre():
             url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch" + str(i) + ".html")
 
         print(url_list)
-        docs = carrega_urls(url_list)
+        docs = carregar_urls(url_list)
         print(docs)
         vector_urls = carrega_vector_db(docs, "livro_google")
+        return vector_urls
 
-def limpa_uploads():
+def limpar_uploads():
     """
     Exclui todos os arquivos no diretório de uploads.
 

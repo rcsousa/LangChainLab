@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
 from htmlTemplate import css
-from modules.utils import carrega_credenciais, processa_documentos, separa_texto, carrega_vector_db, conversa, gera_conversa, get_text, inicializa_ui, reseta_ui, carrega_base_de_conhecimento_sre
+from modules.utils import carregar_credenciais, processar_documentos, separar_texto, carrega_vector_db, criar_chain_instance, gerar_resposta, capturar_input_usuario, inicializar_ui, resetar_ui, carregar_base_de_conhecimento_sre, limpar_uploads
 
 
 def main():
@@ -15,10 +15,10 @@ def main():
     Retorna:
         None
     """
-    carrega_credenciais()
-    inicializa_ui()
+    carregar_credenciais()
+    inicializar_ui()
 
-    st.set_page_config(page_title="Assistant de Pesquisas",page_icon=":books:")
+    st.set_page_config(page_title="Assistente de Pesquisas",page_icon=":books:")
     st.write(css,unsafe_allow_html=True)
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
@@ -39,10 +39,10 @@ def main():
                     with open(os.path.join(upload_dir, uploaded_files.name), "wb") as f:
                         saved_file = f.write(uploaded_files.getbuffer())
                 if saved_file:
-                    texto = processa_documentos(upload_dir)
-                    trechos = separa_texto(texto)
+                    documentos = processar_documentos(upload_dir)
+                    trechos = separar_texto(documentos)
                     store = carrega_vector_db(trechos, "faiss_uploaded_docs")
-                    st.session_state.conversation = conversa(store)
+                    st.session_state.conversation = criar_chain_instance(store)
                     st.success("Processamento concluído!")
                 else:
                     st.error("Nenhum documento processado!")
@@ -51,17 +51,13 @@ def main():
         # Seção para carregar bases de conhecimento conhecidas
         st.subheader("🪣 Base de Dados Fundamentais")
         
-        def caixa_de_selecao(opcao_selecionada):
-            # Do something with the selected option
-            st.write(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
-
-        opcoes = ["Site Reliability Engineering", "Option 2", "Option 3"]
+        opcoes = ["Site Reliability Engineering", "Observability [TBD]", "DevOps [TBD]"]
         opcao_selecionada = st.selectbox("Selecione uma opção", opcoes)
         if st.button("Carregar"):
             with st.spinner("Processando..."):
-                t = carrega_base_de_conhecimento_sre()
+                t = carregar_base_de_conhecimento_sre()
                 if t:
-                    caixa_de_selecao(opcao_selecionada)
+                    st.success(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
         # Fim da seção para carregar bases de conhecimento conhecidas
         
         #Seção para selecionar o modelo de conversação
@@ -76,7 +72,8 @@ def main():
         
         limpar_conversa = st.sidebar.button("Limpar Conversa", key="limpar")
         if limpar_conversa:
-            reseta_ui()
+            resetar_ui()
+            limpar_uploads()
         # Fim da seção para selecionar o modelo de conversação
 
     col2.subheader("")
@@ -85,13 +82,13 @@ def main():
     container_resposta = st.container()
 
     with container_pergunta:
-        user_input = get_text()
+        input_usuario = capturar_input_usuario()
 
 
     with container_resposta:
-        if user_input:
-            response = gera_conversa(user_input)
-            st.session_state.past.append(user_input)
+        if input_usuario:
+            response = gerar_resposta(input_usuario)
+            st.session_state.past.append(input_usuario)
             st.session_state.generated.append(response['answer'])
         
         if st.session_state['generated']:
