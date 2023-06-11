@@ -265,10 +265,11 @@ def sre_building_secure_and_reliable_systems():
         else:
             url_list.append("https://google.github.io/building-secure-and-reliable-systems/raw/ch" + str(i) + ".html")
 
-        print(url_list)
-        docs = carregar_urls(url_list)
-        print(docs)
-        vector_urls = carregar_vector_db(docs, "building_secure_and_seliable_systems")
+    print(url_list)
+    docs = carregar_urls(url_list)
+    print(docs)
+    vector_urls = carregar_vector_db(docs, "sre_building_secure_and_reliable_systems")
+    if vector_urls:
         return vector_urls
 
 def sre_site_reliability_engineering():
@@ -383,7 +384,8 @@ def sre_site_reliability_engineering():
     docs = carregar_urls(url_list)
     print(docs)
     vector_urls = carregar_vector_db(docs, "site_reliability_engineering")
-    return vector_urls
+    if vector_urls:
+        return vector_urls
 
 def limpar_uploads():
     """
@@ -445,7 +447,7 @@ def pesquisar_kb_brds(input_usuario):
 def pesquisar_documentos_upload(input_usuario):
     embeddings = definir_embedder()
     uploaded_docs = FAISS.load_local("faiss_uploaded_docs", embeddings)
-    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0, client=any)
+    llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
     #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     
     qa = RetrievalQA.from_chain_type(
@@ -479,7 +481,7 @@ def agente(input_usuario):
             name="Documentos enviados",
             func=pesquisar_documentos_upload,
             description=(
-                'Useful for answering questions based on the documents that were uploaded by the user'
+                'Use this tool to answer general purpose questions about the uploaded documents.'
             )
         ),  
         Tool(
