@@ -72,6 +72,7 @@ def main():
                     t = sre_site_reliability_engineering()
                 elif opcao_selecionada == "Building Secure and Reliable Systems":
                     t = sre_building_secure_and_reliable_systems()
+                    #print(t)
                 if t:
                     st.success(f"Base de conhecimento sobre {opcao_selecionada} carregada!")
         # Fim da seção para carregar bases de conhecimento conhecidas
@@ -79,11 +80,12 @@ def main():
         #Seção para selecionar o modelo de conversação
         
         st.subheader("🤖 Escolha seu modelo LLM")
-        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
+        #modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
+        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3.5"))
         
-        if modelo == "GPT-3":
-            st.session_state.modelo = "text-davinci-003"
-        else:
+        #if modelo == "GPT-3":
+        #    st.session_state.modelo = "text-davinci-003"
+        if modelo == "GPT-3.5":
             st.session_state.modelo = "trouble-buddy"
         
         limpar_conversa = st.sidebar.button("Limpar Conversa", key="limpar")
