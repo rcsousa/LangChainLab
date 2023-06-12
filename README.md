@@ -1,6 +1,6 @@
 # Streamlit Chatbot
 
-Este é um chatbot que implementa o padrão de 'Augmented Retrieval' para recuperar informações em fontes de dados privadas usando o gpt-3.5-turbo (ChatGPT) é construído usando o Streamlit, uma estrutura de aplicativo da web Python que permite criar aplicativos da web interativos com facilidade.
+Este é um chatbot que implementa o padrão de 'Augmented Retrieval' para recuperar informações em fontes de dados privadas usando o **gpt-3.5-turbo** (ChatGPT) é construído usando o Streamlit, uma estrutura de aplicativo da web Python que permite criar aplicativos da web interativos com facilidade.
 
 # Clonando o Repo
 
@@ -60,10 +60,10 @@ Troque o nome do template .env_template para .env:
 ```Shell
 $ mv .env_template .env
 ```
-em seguida atualize o arquivo e inclua a sua API key e o deployment ID do modelo implementado no Azure OpenAI Sevices. O aquivo final deve ter esse formato.
+em seguida atualize o arquivo e inclua a sua API key e o deployment ID, e API endpoint do modelo implementado no Azure OpenAI Sevices. O aquivo final deve ter esse formato.
 ```Dotenv
 OPENAI_API_KEY="<<Sua API Key no Azure OpenAI Service>>"
-OPENAI_API_BASE="https://copilot-openai.openai.azure.com"
+OPENAI_API_BASE="<<Endpoint da sua API no Azure OpenAI Services>>"
 OPENAI_API_TYPE="azure"
 OPENAI_API_VERSION="2023-05-15"
 MODEL_DEPLOYMENT_ID="<<Deployment ID do Azure OpenAI Service>>"
@@ -86,9 +86,10 @@ O código já tem scrappers para criar 2 vectorDBs (FAISS) baseados em informaç
 - Building Secure & Reliable Systems (https://google.github.io/building-secure-and-reliable-systems/raw/toc.html)
 
 :warning: **Lentidão ao carregar as bases fundamentais**
+:winki: **Já precisei esperar até 10 minutos...tenha paciência!**
 
 ```text
-Dependendo da velocidade da rede e do rate limit para uso das APIs de embedding o processo de carregamento das bases fundamentais pode demorar uns 2 minutos.
+Dependendo da velocidade da rede e do rate limit para uso das APIs de embedding o processo de carregamento das bases fundamentais pode demorar alguns minutos. Não precisa carregar a cada interação, o programa irá salvar uma versão local do vectorDB.
 ```
 
 

@@ -4,7 +4,6 @@ import os
 import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.colored_header import colored_header
-from htmlTemplate import css
 from modules.utils import carregar_credenciais
 from modules.utils import processar_documentos
 from modules.utils import separar_texto
@@ -31,7 +30,7 @@ def main():
     inicializar_ui()
 
     st.set_page_config(page_title="Assistente de Pesquisas",page_icon=":books:")
-    st.write(css,unsafe_allow_html=True)
+    st.write(unsafe_allow_html=True)
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
@@ -81,7 +80,7 @@ def main():
         
         st.subheader("🤖 Escolha seu modelo LLM")
         #modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
-        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3.5"))
+        modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3.5", "OUtro[TBD]"))
         
         #if modelo == "GPT-3":
         #    st.session_state.modelo = "text-davinci-003"
