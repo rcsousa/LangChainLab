@@ -62,7 +62,7 @@ $ mv .env_template .env
 ```
 em seguida atualize o arquivo e inclua a sua API key e o deployment ID do modelo implementado no Azure OpenAI Sevices. O aquivo final deve ter esse formato.
 ```Dotenv
-OPENAI_API_KEY=**<<Sua API Key no Azure OpenAI Service>>**
+OPENAI_API_KEY="<<Sua API Key no Azure OpenAI Service>>"
 OPENAI_API_BASE="https://copilot-openai.openai.azure.com"
 OPENAI_API_TYPE="azure"
 OPENAI_API_VERSION="2023-05-15"
