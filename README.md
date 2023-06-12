@@ -70,7 +70,7 @@ O código já tem scrappers para criar 2 vectorDBs (FAISS) baseados em informaç
 - Site Reliability Engineering (https://sre.google/sre-book/table-of-contents/)
 - Building Secure & Reliable Systems (https://google.github.io/building-secure-and-reliable-systems/raw/toc.html)
 
-|:bucket: Informações Importantes|
+|:bucket:| Informações Importantes|
 |--------------------------------| 
 |Dependendo da velocidade da rede e do rate limit para uso das APIs de embedding o processo de carregamento das bases fundamentais pode demorar uns 2 minutos | 
 
