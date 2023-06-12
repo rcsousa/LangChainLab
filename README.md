@@ -86,6 +86,7 @@ O código já tem scrappers para criar 2 vectorDBs (FAISS) baseados em informaç
 - Building Secure & Reliable Systems (https://google.github.io/building-secure-and-reliable-systems/raw/toc.html)
 
 :warning: **Lentidão ao carregar as bases fundamentais**
+
 :winki: **Já precisei esperar até 10 minutos...tenha paciência!**
 
 ```text

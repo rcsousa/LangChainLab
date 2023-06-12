@@ -481,21 +481,21 @@ def agente(input_usuario):
             name="Documentos enviados",
             func=pesquisar_documentos_upload,
             description=(
-                'Use this tool to answer general purpose questions about the uploaded documents.'
+                'Use this tool to answer general purpose questions'
             )
         ),  
         Tool(
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
             func=pesquisar_kb_brds,
             description=(
-                'Use this tool when answering questions about Designing and Building Reliable Distributed Systems'
+                'Use this tool when the user asks questions about Designing and Building Reliable Distributed Systems'
             )
         ),
         Tool(
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
             func=pesquisar_kb_sre,
             description=(
-                'Use this tool when answering questions about Site Reliability Engineering (SRE)'
+                'Use this tool when the user asks questions about Site Reliability Engineering (SRE)'
             )
         )
 
