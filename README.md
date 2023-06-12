@@ -2,13 +2,18 @@
 
 Este é um chatbot que implementa o padrão de 'Augmented Retrieval' para recuperar informações em fontes de dados privadas usando o gpt-3.5-turbo (ChatGPT) é construído usando o Streamlit, uma estrutura de aplicativo da web Python que permite criar aplicativos da web interativos com facilidade.
 
+# Clonando o Repo
+
+A partir do prompt to seu sistema operacional
+```
+$ git clone https://github.com/rcsousa/LangChainLab.git
+```
+
 # Configurando o ambiente
 
 ## Assegure que você tem a versão correta do Python instalada
 |:exclamation: NOTA IMPORTANTE|
 |-----------------------------|
-
-**Warning**
 
  A versão do Python utilizada nesse projecto está declarada no arquivo runtime.txt. Assegure-se de ter a mesma versão instalada e que ela é a versão 'linkada' ao comando 'python'
 
@@ -19,7 +24,7 @@ Python 3.10.4
 
 ## Crie um ambiente virtual (venv)
 ```bash
-python -m venv .venv
+$ python -m venv .venv
 ```
 ## Ative o ambiente virtual
 <details>
@@ -27,30 +32,30 @@ python -m venv .venv
 <summary>Linux version</summary>
 
 ```bash
-source .venv/bin/activate
+$ source .venv/bin/activate
 ```
 </details>
 <details>
 <summary>Windows Version</summary>
-In cmd.exe
+No cmd.exe
 
 ```cmd
-venv\Scripts\activate.bat
+c:\venv\Scripts\activate.bat
 ```
-In PowerShell
+No PowerShell
 ```Powershell
-venv\Scripts\Activate.ps1
+PS C:\venv\Scripts\Activate.ps1
 ```
 </details>
 
-## Instalação
+# Instalando as dependências
 Para instalar as dependências do projeto, execute o seguinte comando:
 
 ```
 pip install -r requirements.txt
 ```
 
-## Uso
+# Iniciando o chatbot
 Para executar o aplicativo da web, execute o seguinte comando:
 
 ```
@@ -59,11 +64,17 @@ streamlit run copilot.py
 
 Isso iniciará o aplicativo da web e abrirá uma nova janela do navegador. Você pode então usar o chatbot para pesquisar informações nos documentos fornecidos.
 
-## Base de Dados Fundamentais
+# Base de Dados Fundamentais
 O código já tem scrappers para criar 2 vectorDBs (FAISS) baseados em informações públicas. São elas:
 
 - Site Reliability Engineering (https://sre.google/sre-book/table-of-contents/)
 - Building Secure & Reliable Systems (https://google.github.io/building-secure-and-reliable-systems/raw/toc.html)
+
+|:bucket: Informações Importantes|
+|--------------------------------| 
+|Dependendo da velocidade da rede e do rate limit para uso das APIs de embedding o processo de carregamento das bases fundamentais pode demorar uns 2 minutos | 
+| -------------------------------| 
+
 
 ## Contribuindo
 Se você quiser contribuir para este projeto, sinta-se à vontade para enviar um pull request. Certifique-se de seguir as diretrizes de contribuição e de teste.
