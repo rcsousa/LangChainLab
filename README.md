@@ -55,6 +55,21 @@ Para instalar as dependências do projeto, execute o seguinte comando:
 pip install -r requirements.txt
 ```
 
+# Criando as variáveis de ambiente
+Troque o nome do template .env_template para .env:
+```Shell
+$ mv .env_template .env
+```
+em seguida atualize o arquivo e inclua a sua API key e o deployment ID do modelo implementado no Azure OpenAI Sevices. O aquivo final deve ter esse formato.
+```Dotenv
+OPENAI_API_KEY=**<<Sua API Key no Azure OpenAI Service>>**
+OPENAI_API_BASE="https://copilot-openai.openai.azure.com"
+OPENAI_API_TYPE="azure"
+OPENAI_API_VERSION="2023-05-15"
+MODEL_DEPLOYMENT_ID="<<Deployment ID do Azure OpenAI Service>>"
+```
+
+
 # Iniciando o chatbot
 Para executar o aplicativo da web, execute o seguinte comando:
 
