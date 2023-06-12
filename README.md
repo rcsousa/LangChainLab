@@ -23,7 +23,7 @@ Python 3.10.4
 ```
 
 ## Crie um ambiente virtual (venv)
-```bash
+```Shell
 $ python -m venv .venv
 ```
 ## Ative o ambiente virtual
@@ -31,7 +31,7 @@ $ python -m venv .venv
 
 <summary>Linux version</summary>
 
-```bash
+```Shell
 $ source .venv/bin/activate
 ```
 </details>
@@ -39,11 +39,11 @@ $ source .venv/bin/activate
 <summary>Windows Version</summary>
 No cmd.exe
 
-```cmd
+```Shell
 c:\venv\Scripts\activate.bat
 ```
 No PowerShell
-```Powershell
+```Shell
 PS C:\venv\Scripts\Activate.ps1
 ```
 </details>
@@ -51,14 +51,14 @@ PS C:\venv\Scripts\Activate.ps1
 # Instalando as dependências
 Para instalar as dependências do projeto, execute o seguinte comando:
 
-```
+```Shell
 pip install -r requirements.txt
 ```
 
 # Iniciando o chatbot
 Para executar o aplicativo da web, execute o seguinte comando:
 
-```
+```Shell
 streamlit run copilot.py
 ```
 
