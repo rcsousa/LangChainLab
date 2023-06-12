@@ -73,7 +73,6 @@ O código já tem scrappers para criar 2 vectorDBs (FAISS) baseados em informaç
 |:bucket: Informações Importantes|
 |--------------------------------| 
 |Dependendo da velocidade da rede e do rate limit para uso das APIs de embedding o processo de carregamento das bases fundamentais pode demorar uns 2 minutos | 
-| -------------------------------| 
 
 
 ## Contribuindo
