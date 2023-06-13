@@ -12,6 +12,20 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.agents import Tool, initialize_agent
+from langchain.experimental.plan_and_execute import PlanAndExecute, load_agent_executor, load_chat_planner
+
+from langchain.prompts import (
+    ChatPromptTemplate,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+    AIMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+from langchain.schema import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
 
 
 
@@ -475,6 +489,15 @@ def pesquisar_kb_sre(input_usuario):
     return resposta
 
 def agente(input_usuario):
+    """
+    Esta função serve como o ponto de entrada principal para o agente do chatbot. Ela recebe uma string de entrada do usuário e retorna uma string de resposta gerada pelo agente.
+
+    Args:
+        input_usuario (str): A string de entrada do usuário.
+
+    Returns:
+        str: A string de resposta gerada pelo agente.
+    """
 
     tools = [
         Tool(
@@ -488,45 +511,72 @@ def agente(input_usuario):
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
             func=pesquisar_kb_brds,
             description=(
-                'Use this tool when the user asks questions about Designing and Building Reliable Distributed Systems'
+                'Only use this tool when the user asks to include Designing and Building Reliable Distributed Systems as part of the answer'
             )
         ),
         Tool(
             name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
             func=pesquisar_kb_sre,
             description=(
-                'Use this tool when the user asks questions about Site Reliability Engineering (SRE)'
+                'Only Use this tool when the user asks to include Site Reliability Engineering (SRE) topics as part of the answer'
             )
         )
 
     ]
 
-    #prompt_template = f"""You are a helpful and analytical assistant. You are helping a user with information about {input}  related to the documents that were uploaded. 
-    #by the user. and if you don't know the answer, you can ask the user for more information. You can also ask the user to upload more documents.
-    #
-    #According to the documents uploaded, your answer is:"""
+    tool_names = [tool.name for tool in tools]
 
+    system_template = """
+    Complete the objective as best you can. You have access to the following tools:
+
+    - "Documentos enviados"
+    - "Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google"
+    - "Base de Conhecimento sobre o livro Site Reliability Engineering do Google"
+
+    The user question is: {user_input}
     
-    #prompt = PromptTemplate(template=prompt_template, input_variables=["input"])
+    You are helpful and cheerful assistant who is capable of providing insightful and precise answers to user's question based on the information available in the faiss_uploaded_docs index.
+    You try to be as helpeful as possible but if you do not know the answer, do not invent an it instead say "I do not know how to answer this question based on the context provided".
+    As a complement, if asked to corralate the answer with SRE practices or resilient system's design, try to expand on the answer by providing insights extracted from the the site_reliability_engineering and sre_building_secure_and_reliable_systems indexes on how SRE practices and the design of resilient systems could help in the future.
+    When providing insights to the user, always try to provide at least 3 insights and cite the sources.
+
+    These were previous tasks you completed:
+
+
+    Your answer is:
+    """
+
+
+    prompt = PromptTemplate(template=system_template, input_variables=['user_input'],)
+    
+    #print(prompt.format(user_input=input_usuario))
+    print(prompt.format_prompt(user_input=input_usuario))
+
     llm = AzureOpenAI(
         deployment_name='trouble-buddy', 
         model_name='gpt-3.5-turbo', 
         temperature=0.0, 
-        client=any
+        client=any,
         #prompt=prompt
         )
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-    
+
 
     agente = initialize_agent(
-        agent='chat-conversational-react-description',
+        agent='chat-zero-shot-react-description',
         tools=tools,
         llm=llm,
         verbose=True,
         max_interactions=3,
         early_stopping_method='generate',
         handle_parsing_errors=True,
-        memory=memory
+        memory=memory,
+        #agent_kwargs={
+        #    'prompt': system_template,
+        #}
     )
 
-    return agente(input_usuario)
+
+    d = agente.run(prompt.format_prompt(user_input=input_usuario))
+    print(d[0]['messsage'])
+    return d[0]["message"]

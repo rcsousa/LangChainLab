@@ -105,6 +105,7 @@ def main():
     with container_resposta:
         if input_usuario:
             response = agente(input_usuario)
+            print(response)
             #response = gerar_resposta(input_usuario)
             sre_kb_resposta = agente(input_usuario)
             if sre_kb_resposta:
