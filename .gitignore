@@ -12,7 +12,7 @@ site_reliability_engineering
 sre_building_secure_and_reliable_systems
 
 # Ignore uploaded files
-uploads/**
+
 
 # Ignore all files ending in .pyc
 *.pyc
