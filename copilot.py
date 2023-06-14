@@ -77,13 +77,9 @@ def main():
         # Fim da seção para carregar bases de conhecimento conhecidas
         
         #Seção para selecionar o modelo de conversação
-        
         st.subheader("🤖 Escolha seu modelo LLM")
-        #modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3", "GPT-3.5"))
         modelo = st.sidebar.radio("Qual modelo quer usar?:", ("GPT-3.5", "OUtro[TBD]"))
         
-        #if modelo == "GPT-3":
-        #    st.session_state.modelo = "text-davinci-003"
         if modelo == "GPT-3.5":
             st.session_state.modelo = "trouble-buddy"
         
@@ -106,7 +102,6 @@ def main():
         if input_usuario:
             response = agente(input_usuario)
             print(response)
-            #response = gerar_resposta(input_usuario)
             sre_kb_resposta = agente(input_usuario)
             if sre_kb_resposta:
                 print(sre_kb_resposta)

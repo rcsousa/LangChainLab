@@ -556,8 +556,6 @@ def agente(input_usuario):
 
     prompt = PromptTemplate(template=system_template, input_variables=['user_input'],)
     
-    #print(prompt.format(user_input=input_usuario))
-    #print(prompt.format_prompt(user_input=input_usuario))
 
     llm = AzureOpenAI(
         deployment_name='trouble-buddy', 
@@ -577,10 +575,6 @@ def agente(input_usuario):
         max_interactions=3,
         early_stopping_method='generate',
         handle_parsing_errors=True,
-        #memory=memory,
-        #agent_kwargs={
-        #    'prompt': system_template,
-        #}
     )
 
 
