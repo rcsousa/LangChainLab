@@ -109,9 +109,9 @@ def main():
             #response = gerar_resposta(input_usuario)
             sre_kb_resposta = agente(input_usuario)
             if sre_kb_resposta:
-                print(sre_kb_resposta['output'])
+                print(sre_kb_resposta)
             st.session_state.past.append(input_usuario)
-            st.session_state.generated.append(response['output'])
+            st.session_state.generated.append(response)
         
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])):

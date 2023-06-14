@@ -445,13 +445,13 @@ def criar_vectorstore_session(index_name):
 
 def pesquisar_kb_brds(input_usuario):
     embeddings = definir_embedder()
-    kb_sre = FAISS.load_local("building_secure_and_seliable_systems", embeddings)
+    kb_brds = FAISS.load_local("sre_building_secure_and_reliable_systems", embeddings)
     llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
     #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     
     qa = RetrievalQA.from_chain_type(
         llm=llm,
-        retriever=kb_sre.as_retriever(),
+        retriever=kb_brds.as_retriever(),
         #memory=memory
     )
 
@@ -537,10 +537,9 @@ def agente(input_usuario):
     
     You are helpful and cheerful assistant who is capable of providing insightful and precise answers to user's question based on the information available in the faiss_uploaded_docs index.
     You try to be as helpeful as possible but if you do not know the answer, do not invent an it instead say "I do not know how to answer this question based on the context provided".
-    As a complement, if asked to corralate the answer with SRE practices or resilient system's design, try to expand on the answer by providing insights extracted from the the site_reliability_engineering and sre_building_secure_and_reliable_systems indexes on how SRE practices and the design of resilient systems could help in the future.
+    If asked to corralate the answer with SRE practices or resilient system's design, try to expand on the answer by providing insights extracted from the the site_reliability_engineering and sre_building_secure_and_reliable_systems indexes.
     When providing insights to the user, always try to provide at least 3 insights and cite the sources.
-
-    These were previous tasks you completed:
+    You always answer in portuguese.
 
 
     Your answer is:
@@ -550,7 +549,7 @@ def agente(input_usuario):
     prompt = PromptTemplate(template=system_template, input_variables=['user_input'],)
     
     #print(prompt.format(user_input=input_usuario))
-    print(prompt.format_prompt(user_input=input_usuario))
+    #print(prompt.format_prompt(user_input=input_usuario))
 
     llm = AzureOpenAI(
         deployment_name='trouble-buddy', 
@@ -570,7 +569,7 @@ def agente(input_usuario):
         max_interactions=3,
         early_stopping_method='generate',
         handle_parsing_errors=True,
-        memory=memory,
+        #memory=memory,
         #agent_kwargs={
         #    'prompt': system_template,
         #}
@@ -578,5 +577,4 @@ def agente(input_usuario):
 
 
     d = agente.run(prompt.format_prompt(user_input=input_usuario))
-    print(d[0]['messsage'])
-    return d[0]["message"]
+    return d
