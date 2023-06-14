@@ -15,7 +15,7 @@ $ git clone https://github.com/rcsousa/LangChainLab.git
 |:exclamation: NOTA IMPORTANTE|
 |-----------------------------|
 
- A versão do Python utilizada nesse projecto está declarada no arquivo runtime.txt. Assegure-se de ter a mesma versão instalada e que ela é a versão 'linkada' ao comando 'python'
+ A versão do Python utilizada nesse projecto está declarada no arquivo runtime.txt. Assegure-se de ter a mesma versão (ou superior) instalada e que ela é a versão 'linkada' ao comando 'python'
 
 ```bash
 $ python --version 
@@ -50,6 +50,7 @@ PS C:\venv\Scripts\Activate.ps1
 
 # Instalando as dependências
 Para instalar as dependências do projeto, execute o seguinte comando:
+:warning: **É possível que seu sistema já tenha algumas dependências satisfeitas ou existam alguns warnings relacionadas a versões conflitantes. É seguro ignora-las na maioria das vezes**
 
 ```Shell
 pip install -r requirements.txt
