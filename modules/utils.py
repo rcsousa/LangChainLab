@@ -403,7 +403,7 @@ def sre_site_reliability_engineering():
 
 def limpar_uploads():
     """
-    Exclui todos os arquivos no diretório de uploads.
+    Exclui todos os arquivos com sufixo pdf no diretório de uploads.
 
     Args:
     Nenhum
@@ -411,7 +411,15 @@ def limpar_uploads():
     Returns:
     Nenhum
     """
-    for filename in os.listdir("uploads"):
+
+    pdf_files = [f for f in os.listdir("uploads") if f.endswith(".pdf")]
+    for filename in pdf_files:
+        file_path = os.path.join("uploads", filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f"Falha ao excluir {file_path}. Motivo: {e}")
         file_path = os.path.join("uploads", filename)
         try:
             if os.path.isfile(file_path) or os.path.islink(file_path):
