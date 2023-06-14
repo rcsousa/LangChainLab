@@ -50,6 +50,7 @@ PS C:\venv\Scripts\Activate.ps1
 
 # Instalando as dependências
 Para instalar as dependências do projeto, execute o seguinte comando:
+
 :warning: **É possível que seu sistema já tenha algumas dependências satisfeitas ou existam alguns warnings relacionadas a versões conflitantes. É seguro ignora-las na maioria das vezes**
 
 ```Shell
