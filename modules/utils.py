@@ -3,6 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.chat_models import AzureChatOpenAI as AzureOpenAI
+from langchain import LLMChain
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -11,8 +12,13 @@ from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.agents import Tool, initialize_agent
+from langchain.agents import Tool, initialize_agent, AgentExecutor, ZeroShotAgent
 from langchain.experimental.plan_and_execute import PlanAndExecute, load_agent_executor, load_chat_planner
+from langchain.agents.agent_toolkits import (
+    create_vectorstore_router_agent,
+    VectorStoreRouterToolkit,
+    VectorStoreInfo,
+)
 
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -470,13 +476,19 @@ def pesquisar_documentos_upload(input_usuario):
     embeddings = definir_embedder()
     uploaded_docs = FAISS.load_local("faiss_uploaded_docs", embeddings)
     llm = AzureOpenAI(deployment_name='trouble-buddy', model_name='gpt-3.5-turbo', temperature=0.0, client=any)
-    #memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=uploaded_docs.as_retriever()
-        #memory=memory
+    #qa = RetrievalQA.from_chain_type(
+    #    llm=llm,
+    #    retriever=uploaded_docs.as_retriever()
+    #    #memory=memory
+    #)
+    qa = ConversationalRetrievalChain.from_llm(
+        llm,
+        uploaded_docs.as_retriever(),
+        memory=memory
     )
+
 
     resposta = qa.run(input_usuario)
     return resposta
@@ -507,76 +519,58 @@ def agente(input_usuario):
         str: A string de resposta gerada pelo agente.
     """
 
-    tools = [
-        Tool(
-            name="Documentos enviados",
-            func=pesquisar_documentos_upload,
-            description=(
-                'Use this tool to answer general purpose questions'
-            )
-        ),  
-        Tool(
-            name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
-            func=pesquisar_kb_brds,
-            description=(
-                'Only use this tool when the user asks to include Designing and Building Reliable Distributed Systems as part of the answer'
-            )
-        ),
-        Tool(
-            name="Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
-            func=pesquisar_kb_sre,
-            description=(
-                'Only Use this tool when the user asks to include Site Reliability Engineering (SRE) topics as part of the answer'
-            )
-        )
 
-    ]
-
-    tool_names = [tool.name for tool in tools]
-
-    system_template = """
-    Complete the objective as best you can. You have access to the following tools:
-
-    - "Documentos enviados"
-    - "Base de Conhecimento sobre o livro Building Secure and Reliable Systems do Google"
-    - "Base de Conhecimento sobre o livro Site Reliability Engineering do Google"
-
-    The user question is: {user_input}
-    
-    You are helpful and cheerful assistant who is capable of providing insightful and precise answers to user's question based on the information available in the faiss_uploaded_docs index.
-    You try to be as helpeful as possible but if you do not know the answer, do not invent an it instead say "I do not know how to answer this question based on the context provided".
-    If asked to corralate the answer with SRE practices or resilient system's design, try to expand on the answer by providing insights extracted from the the site_reliability_engineering and sre_building_secure_and_reliable_systems indexes.
-    When providing insights to the user, always try to provide at least 3 insights and cite the sources.
-    You always answer in portuguese.
-
-
-    Your answer is:
-    """
-
-
-    prompt = PromptTemplate(template=system_template, input_variables=['user_input'],)
-    
+    embeddings = definir_embedder()
 
     llm = AzureOpenAI(
         deployment_name='trouble-buddy', 
         model_name='gpt-3.5-turbo', 
         temperature=0.0, 
         client=any,
-        #prompt=prompt
         )
-    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-
-
-    agente = initialize_agent(
-        agent='chat-zero-shot-react-description',
-        tools=tools,
-        llm=llm,
-        verbose=True,
-        max_interactions=3,
-        early_stopping_method='generate',
-        handle_parsing_errors=True,
+    
+    """
+    Tookit para o agente do chatbot.
+    """
+    uploaded_docs = FAISS.load_local("faiss_uploaded_docs", embeddings)
+    upload_vectorstore_info = VectorStoreInfo(
+        name="Documentos enviados",
+        description="Informações sobre os documentos enviados pelo usuário",
+        vectorstore=uploaded_docs,
     )
 
+    kb_sre = FAISS.load_local("site_reliability_engineering", embeddings)
+    sre_vectorstore_info = VectorStoreInfo(
+        name="Base de Conhecimento sobre o livro Site Reliability Engineering do Google",
+        description="Informações sobre o livro Site Reliability Engineering do Google",
+        vectorstore=kb_sre,
+    )
 
-    d = agente.run(prompt.format_prompt(user_input=input_usuario))
+    kb_brds = FAISS.load_local("sre_building_secure_and_reliable_systems", embeddings)
+    brds_vectorstore_info = VectorStoreInfo(
+        name="Based de Conhecimento sobre o livro Building Secure and Reliable Systems do Google",
+        description="Informações sobre o livro Building Secure and Reliable Systems do Google",
+        vectorstore=kb_brds,
+    )    
+
+    router_toolkit = VectorStoreRouterToolkit(
+    vectorstores=[upload_vectorstore_info, sre_vectorstore_info, brds_vectorstore_info], llm=llm
+    )
+
+    prefix = """
+    prefix: str = 'You are an agent designed to answer questions.
+    You have access to tools for interacting with different sources, and the inputs to the tools are questions.
+    Your main task is to decide which of the tools is relevant for answering question at hand.
+    For complex questions, you can break the question down into sub questions and use tools to answers the sub questions.
+    You always answer in portuguese.
+    """
+
+    agent_executor = create_vectorstore_router_agent(
+        llm=llm, 
+        toolkit=router_toolkit, 
+        verbose=True,
+        prefix=prefix,
+        )
+    
+    d = agent_executor.run(input_usuario)
     return d

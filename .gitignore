@@ -5,6 +5,7 @@ faiss_index
 __pycache__
 index.pkl
 .venv
+venv
 
 # Ignore all vectordb files
 faiss_uploaded_docs

@@ -102,9 +102,6 @@ def main():
         if input_usuario:
             response = agente(input_usuario)
             print(response)
-            sre_kb_resposta = agente(input_usuario)
-            if sre_kb_resposta:
-                print(sre_kb_resposta)
             st.session_state.past.append(input_usuario)
             st.session_state.generated.append(response)
         
